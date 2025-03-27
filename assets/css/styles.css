@@ -60,7 +60,7 @@ body {
 }
 
 .grid {
-  overflow-y: auto;
+  overflow-y: hidden;
   padding: 0.5em;
   display: grid;
   gap: 0.5em;
@@ -104,7 +104,7 @@ body {
 
 .row:last-child {
   border: none;
-  padding-bottom: 0.5em;
+  padding-bottom: 0.4em;
 }
 
 .label {
@@ -159,36 +159,40 @@ body {
 }
 
 @media (max-width: 500px), (max-device-width: 500px) {
-    .header {
-      /* Revert to flex column for mobile */
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      height: auto;
-      padding: 0.5em;
-      /* Explicitly unset grid properties if needed, though flex usually overrides */
-      grid-template-columns: unset;
-    }
-  
-    .title {
-      grid-column: unset; /* Unset grid placement */
-      position: static; /* Already done, but good to be explicit */
-      transform: none;  /* Already done */
-      font-size: 1.5em;
-      white-space: normal; /* Allow wrapping on mobile */
-      text-align: center;
-      margin-bottom: 0.3em;
-      max-width: 100%; /* Ensure it doesn't overflow mobile */
-    }
-  
-    .clock {
-      grid-column: unset; /* Unset grid placement */
-      justify-self: unset; /* Unset grid alignment */
-      margin: 0; /* Reset margin */
-      font-size: 0.8em;
-      text-align: center;
-    }
+  .grid {
+    overflow-y: auto;
+  }
+
+  .header {
+    /* Revert to flex column for mobile */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: auto;
+    padding: 0.5em;
+    /* Explicitly unset grid properties if needed, though flex usually overrides */
+    grid-template-columns: unset;
+  }
+
+  .title {
+    grid-column: unset; /* Unset grid placement */
+    position: static; /* Already done, but good to be explicit */
+    transform: none;  /* Already done */
+    font-size: 1.5em;
+    white-space: normal; /* Allow wrapping on mobile */
+    text-align: center;
+    margin-bottom: 0.3em;
+    max-width: 100%; /* Ensure it doesn't overflow mobile */
+  }
+
+  .clock {
+    grid-column: unset; /* Unset grid placement */
+    justify-self: unset; /* Unset grid alignment */
+    margin: 0; /* Reset margin */
+    font-size: 0.8em;
+    text-align: center;
+  }
 }
 
 /* Add this to your existing CSS */
