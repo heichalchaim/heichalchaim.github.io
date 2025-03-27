@@ -18,7 +18,7 @@ const COLUMN_SPANS = {
 
 // Add these constants for configurable font size limits
 const MIN_FONT_SIZE = 8; // Minimum font size
-const MAX_FONT_SIZE = 200; // Maximum font size
+const MAX_FONT_SIZE = 256; // Maximum font size
 
 // --- Functions ---
 function displayError(message) {
