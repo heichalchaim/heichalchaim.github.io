@@ -1,0 +1,202 @@
+:root {
+  --primary: #003366;
+  --secondary: #1a5f7a;
+  --white: #fff;
+  --border: rgba(0, 0, 0, 0.1);
+  --error: #dc3545;
+  --base-font-size: 16px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-family: system-ui, sans-serif;
+  background: #f5f7fa;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  font-size: var(--base-font-size);
+}
+
+.header {
+    background: var(--primary);
+    color: var(--white);
+    min-height: 5.5em; /* Use min-height for flexibility */
+    /* Use Grid for desktop layout */
+    display: grid;
+    grid-template-columns: 1fr auto 1fr; /* Left space, Title content, Right space */
+    align-items: center;
+    padding: 0 1em; /* Keep padding for spacing from edges */
+    /* position: relative; /* Keep if other absolute elements exist, otherwise remove */
+  }
+  
+  .title {
+    grid-column: 2; /* Place title in the center column */
+    font-size: 4em;
+    text-align: center;
+    white-space: nowrap; /* Keep nowrap if desired, grid handles centering */
+    /* Removed absolute positioning properties */
+    /* Add overflow handling if title can be very long */
+     overflow: hidden;
+     text-overflow: ellipsis;
+     max-width: 100%; /* Prevent extremely long titles breaking layout */
+  }
+  
+  .clock {
+    grid-column: 3; /* Place clock in the right column */
+    justify-self: end; /* Align clock to the right of its column */
+    font-size: 1.5em;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 0.25em 0.5em;
+    border-radius: 8px;
+    /* Removed margin-right: auto */
+  }
+
+.grid {
+  overflow-y: hidden;
+  padding: 0.5em;
+  display: grid;
+  gap: 0.5em;
+  height: 100%;
+  -webkit-overflow-scrolling: touch;
+}
+
+.card {
+  min-height: min-content;
+  background: var(--white);
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+}
+
+.card-header {
+  background: var(--primary);
+  color: var(--white);
+  padding: 0.3em;
+  font-weight: 600;
+  border-radius: 8px 8px 0 0;
+  text-align: center;
+  font-size: 1.2em;
+}
+
+.card-body {
+  padding: 0.2em 1em 0;
+  overflow-y: hidden;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.4em 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.row:last-child {
+  border: none;
+  padding-bottom: 0.5em;
+}
+
+.label {
+  font-weight: 600;
+  color: var(--primary);
+  padding-left: 1em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+}
+
+.value {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.card.messages {
+  background: linear-gradient(135deg, var(--secondary), var(--primary));
+  color: var(--white);
+}
+
+.card.messages .card-header {
+  background: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.card.compact {
+  font-size: 0.7em;
+}
+
+.card.compact .card-header {
+  background: var(--secondary);
+}
+
+.footer {
+  background: var(--primary);
+  color: var(--white);
+  text-align: center;
+  font-size: 0.75em;
+  padding: 0.3em;
+}
+
+.error {
+  background: var(--error);
+  color: var(--white);
+  padding: 1em;
+  margin: 1em;
+  border-radius: 8px;
+  text-align: center;
+}
+
+@media (max-width: 500px), (max-device-width: 500px) {
+    .header {
+      /* Revert to flex column for mobile */
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: auto;
+      padding: 0.5em;
+      /* Explicitly unset grid properties if needed, though flex usually overrides */
+      grid-template-columns: unset;
+    }
+  
+    .title {
+      grid-column: unset; /* Unset grid placement */
+      position: static; /* Already done, but good to be explicit */
+      transform: none;  /* Already done */
+      font-size: 1.5em;
+      white-space: normal; /* Allow wrapping on mobile */
+      text-align: center;
+      margin-bottom: 0.3em;
+      max-width: 100%; /* Ensure it doesn't overflow mobile */
+    }
+  
+    .clock {
+      grid-column: unset; /* Unset grid placement */
+      justify-self: unset; /* Unset grid alignment */
+      margin: 0; /* Reset margin */
+      font-size: 0.8em;
+      text-align: center;
+    }
+}
+
+/* Add this to your existing CSS */
+.loading {
+  text-align: center;
+  font-size: 1.5rem;
+  padding: 2rem;
+  width: 100%;
+}
