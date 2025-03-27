@@ -1,0 +1,226 @@
+:root {
+  --primary: #003366;
+  --secondary: #1a5f7a;
+  --white: #fff;
+  --border: rgba(0, 0, 0, 0.1);
+  --error: #dc3545;
+  --base-font-size: 16px;
+  --compact-font-size: 10px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  font-family: system-ui, sans-serif;
+  font-smooth: never;
+  -webkit-font-smoothing: none;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: geometricPrecision;
+  background: #f5f7fa;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  font-size: var(--base-font-size);
+  overflow: hidden;
+  transform: translateZ(0)
+}
+
+.header {
+  background: var(--primary);
+  color: var(--white);
+  min-height: auto;
+  display: grid;
+  /* Grid: Left Content(QR) | Center(Title) | Right Content(Clock) */
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center; /* Vertically align items in the grid row */
+  padding: 1vw 3vw;
+  gap: 1.5vw; /* Adjust gap between grid columns as needed */
+}
+
+/* Style for the QR code image */
+.qrcode {
+  grid-column: 1;      /* Place QR code in the first (left) column */
+  justify-self: start;   /* Align QR code to the right end of its column */
+  /* align-self: center;  Vertically center the QR code */
+  /* display: block; */
+  height: 7vw;         /* Adjust size as needed */
+  /* padding: 2px; */
+  border-radius: 0.5vw;
+}
+
+.title {
+  grid-column: 2;      /* Place title in the second (center) column */
+  font-size: 6vw;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.clock {
+  grid-column: 3;      /* Place clock in the third (right) column */
+  justify-self: end; /* Align clock to the left start of its column */
+  /* align-self: left;  Vertically center the clock */
+  font-size: 2.5vw;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 0.5vw 1vw;
+  border-radius: 8px;
+  white-space: nowrap;
+}
+
+.grid {
+  padding: 0.5em;
+  display: grid;
+  gap: 0.5em;
+  height: 100%;
+  grid-auto-rows: 1fr;
+  overflow-y: scroll;
+}
+
+.grid::-webkit-scrollbar {
+  display: none;
+}
+
+.card {
+  background: var(--white);
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  display: flex;             /* Keep flex for internal layout */
+  flex-direction: column;    /* Keep flex for internal layout */
+}
+
+.card-header {
+  background: var(--primary);
+  color: var(--white);
+  padding: 0.3em;
+  font-weight: 600;
+  border-radius: 8px 8px 0 0;
+  text-align: center;
+  font-size: 1.4em;
+}
+
+.card-body {
+  padding: 0.2em 1em;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.4em 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.row:last-child {
+  border: none;
+}
+
+.label {
+  font-weight: 600;
+  color: var(--primary);
+  padding-left: 1em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+}
+
+.value {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.card.messages {
+  background: linear-gradient(135deg, var(--secondary), var(--primary));
+  color: var(--white);
+}
+
+.card.messages .card-header {
+  background: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.card.compact {
+  font-size: var(--compact-font-size);
+}
+
+.card.compact .card-header {
+  background: var(--secondary);
+}
+
+.footer {
+  background: var(--primary);
+  color: var(--white);
+  text-align: center;
+  font-size: 1vw;
+  padding: 0.4vw;
+}
+
+.error {
+  background: var(--error);
+  color: var(--white);
+  padding: 1em;
+  margin: 1em;
+  border-radius: 8px;
+  text-align: center;
+}
+
+@media (orientation: portrait) {
+  body { 
+    font-smooth: auto;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: auto;
+  }
+
+  .header {
+    /* Revert to flex column for mobile */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: fit-content; /* Set height to fit the title font */
+    min-height: auto;
+    padding: 0.5em;
+  }
+
+  .title {
+    grid-column: unset; /* Unset grid placement */
+    position: static; /* Already done, but good to be explicit */
+    transform: none;  /* Already done */
+    font-size: 8vw;
+    white-space: normal; /* Allow wrapping on mobile */
+    text-align: center;
+    padding: 1vw;
+    max-width: 100%; /* Ensure it doesn't overflow mobile */
+  }
+
+  .footer {
+    font-size: 3vw;
+    padding: 1vw;
+  }
+
+  .clock {
+    display: none; /* Hide the clock in this layout */
+  }
+
+  .qrcode {
+    display: none;
+  }
+}
+
+/* Add this to your existing CSS */
+.loading {
+  text-align: center;
+  font-size: 2rem;
+  padding: 2rem;
+  width: 100%;
+}
