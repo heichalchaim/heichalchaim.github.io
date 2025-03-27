@@ -56,11 +56,9 @@ body {
   background: rgba(255, 255, 255, 0.1);
   padding: 0.25em 0.5em;
   border-radius: 8px;
-  /* Removed margin-right: auto */
 }
 
 .grid {
-  overflow-y: hidden;
   padding: 0.5em;
   display: grid;
   gap: 0.5em;
