@@ -61,11 +61,13 @@ body {
 
 .grid {
   overflow-y: scroll;
-  padding: 0.5em 0.5em 0.2em 0.5em;
+  padding: 0.5em;
   display: grid;
   gap: 0.5em;
-  min-height: 0;
-  margin-bottom: 0.3em;  
+}
+
+.grid::-webkit-scrollbar {
+  display: none;
 }
 
 .card {
@@ -88,8 +90,7 @@ body {
 }
 
 .card-body {
-  padding: 0.2em 1em 0;
-  overflow-y: hidden;
+  padding: 0.2em 1em;
   flex-grow: 1;
   display: flex;
   flex-direction: column;
@@ -105,7 +106,6 @@ body {
 
 .row:last-child {
   border: none;
-  padding-bottom: 0.5em;
 }
 
 .label {

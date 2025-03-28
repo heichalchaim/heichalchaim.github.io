@@ -1,9 +1,13 @@
 // --- Configuration ---
 // DEPLOYED WEB APP URL - this should point to your Google Apps Script Web App
 const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzbyYfR6VFdL5l0Epzz4vCBtwqPQkb2OUbCx9R1Cdw8qqP5snOvuS0ugbIRQqZ0_tw0Vw/exec';
+const updateInterval = 1000;//5 * 60 * 1000;
 
 // --- DOM Elements ---
-const contentDiv = document.getElementById('content');
+const mainGrid = document.getElementById('mainGrid');
+
+// --- Global State ---
+let currentData = null; // To store the currently displayed data
 
 // --- Constants ---
 const CARD_TYPES = {
@@ -27,12 +31,11 @@ function displayError(message) {
 }
 
 function showError(message) {
-  const grid = document.getElementById('mainGrid');
   const errorDiv = document.createElement('div');
   errorDiv.className = 'error';
   errorDiv.textContent = message;
-  grid.innerHTML = '';
-  grid.appendChild(errorDiv);
+  mainGrid.innerHTML = '';
+  mainGrid.appendChild(errorDiv);
 }
 
 // --- Data Fetching ---
@@ -146,8 +149,7 @@ function renderData(data) {
 }
 
 function renderSchedules(data) {
-  const grid = document.getElementById('mainGrid');
-  grid.innerHTML = '';
+  mainGrid.innerHTML = '';
   const spans = calculateGrid(data);
 
   // Sort data to ensure "הודעות" is rightmost and "זמני היום" is leftmost
@@ -189,7 +191,7 @@ function renderSchedules(data) {
         </div>`;
     }
 
-    grid.appendChild(card);
+    mainGrid.appendChild(card);
   });
 }
 
@@ -219,7 +221,6 @@ function calculateGrid(data) {
 
   if (isMobile) {
     // On mobile, we use a single column layout with larger text
-    const mainGrid = document.getElementById('mainGrid');
     mainGrid.style.gridTemplateColumns = '1fr';
     mainGrid.style.display = 'flex';
     mainGrid.style.flexDirection = 'column';
@@ -237,9 +238,9 @@ function calculateGrid(data) {
   const regularCount = data.length - compactCount;
   const totalCols = (regularCount * COLUMN_SPANS.REGULAR) + (compactCount * COLUMN_SPANS.COMPACT);
 
-  document.getElementById('mainGrid').style.gridTemplateColumns = `repeat(${totalCols}, 1fr)`;
-  document.getElementById('mainGrid').style.display = 'grid';
-  document.getElementById('mainGrid').classList.remove('mobile-grid');
+  mainGrid.style.gridTemplateColumns = `repeat(${totalCols}, 1fr)`;
+  mainGrid.style.display = 'grid';
+  mainGrid.classList.remove('mobile-grid');
 
   // Calculate and set dynamic font size based on screen width and columns
   adjustFontSize(totalCols, data);
@@ -296,8 +297,7 @@ function optimizeFontSize(data) {
   });
 
   // Check for vertical overflow as well
-  const grid = document.getElementById('mainGrid');
-  if (grid.scrollHeight > grid.clientHeight) {
+  if (mainGrid.scrollHeight > mainGrid.clientHeight) {
     needsAdjustment = true;
   }
 
@@ -340,8 +340,7 @@ function tryIncreaseFont(data, currentSize) {
     });
 
     // Check for vertical overflow as well
-    const grid = document.getElementById('mainGrid');
-    if (grid.scrollHeight > grid.clientHeight) {
+    if (mainGrid.scrollHeight > mainGrid.clientHeight) {
       hasOverflow = true;
     }
 
@@ -355,80 +354,54 @@ function tryIncreaseFont(data, currentSize) {
   }, 10);
 }
 
-// --- Helper Functions ---
-function getAllSchedules() {
+// --- Event Listeners ---
+// Recalculate grid and font size when window is resized
+window.addEventListener('resize', () => {
+  // Only run if grid has been initialized and we have data
+  if (mainGrid.hasChildNodes() && currentData) {
+     console.log("Window resized, recalculating grid/font..."); // Optional debug
+     calculateGrid(currentData); // Use the stored data
+   }
+});
+
+// --- Data Update Check ---
+async function checkForUpdates() {
+  console.log("Checking for data updates..."); // Optional: for debugging
   try {
-    // Use fetchData from get-sheet.js to get the real data
-    return fetchData()
-      .then(data => {
-        if (data) {
-          renderSchedules(data);
-        } else {
-          throw new Error('לא התקבלו נתונים');
-        }
-      });
+    const newData = await fetchData();
+
+    // Check if fetch was successful and if data actually changed
+    if (newData && JSON.stringify(newData) !== JSON.stringify(currentData)) {
+      console.log("Data changed, updating display."); // Optional: for debugging
+      currentData = newData; // Update the current data state
+      renderSchedules(currentData); // Re-render the grid with new data
+    } else if (!newData) {
+        console.warn("Failed to fetch updates or received null data.");
+    } else {
+          console.log("No data changes detected."); // Optional: for debugging
+    }
   } catch (error) {
-    console.error('Error in getAllSchedules:', error.message);
-    throw new Error('שגיאה בטעינת הנתונים: ' + error.message);
+    console.error("Error checking for updates:", error);
+    // Optionally show a non-intrusive error indicator if needed
   }
 }
-
-function toggleMockData(useMock) {
-  console.log(`Mock data ${useMock ? 'enabled' : 'disabled'}`);
-  return `Mock data ${useMock ? 'enabled' : 'disabled'}`;
-}
-
-function refreshData() {
-  console.log('Data refresh requested');
-  window.location.reload(); // Simple page reload to refresh data
-}
-
-function enableMockData() {
-  return toggleMockData(true);
-}
-
-// --- Event Listeners ---
-// Recalculate font size when window is resized
-window.addEventListener('resize', () => {
-  const grid = document.getElementById('mainGrid');
-  if (!grid.style.gridTemplateColumns) return;
-
-  // Get current data
-  const cards = Array.from(document.querySelectorAll('.card')).map(card => {
-    const title = card.querySelector('.card-header').textContent;
-    const isMessages = card.classList.contains('messages');
-
-    if (isMessages) {
-      const messages = Array.from(card.querySelectorAll('.row')).map(row => row.textContent);
-      return { title, type: 'messages', messages };
-    } else {
-      const items = Array.from(card.querySelectorAll('.row')).map(row => {
-        return {
-          label: row.querySelector('.label').textContent,
-          value: row.querySelector('.value').innerHTML
-        };
-      });
-      return { title, type: 'schedule', items };
-    }
-  });
-
-  // Recalculate grid and font size
-  calculateGrid(cards);
-});
 
 // --- Initialization ---
 window.onload = async () => {
   try {
     setInterval(updateClock, 1000);
     updateClock();
-
+  
     // Show loading indicator
-    document.getElementById('mainGrid').innerHTML = '<div class="loading">טוען נתונים...</div>';
-    
-    // Load data using fetchData
-    const data = await fetchData();
-    if (data) {
-      renderSchedules(data);
+    mainGrid.innerHTML = '<div class="loading">טוען נתונים...</div>';
+
+    // Load initial data using fetchData
+    const initialData = await fetchData();
+    if (initialData) {
+      currentData = initialData; // Store the initial data
+      renderSchedules(currentData);
+      // Start checking for updates AFTER initial load
+      setInterval(checkForUpdates, updateInterval); 
     } else {
       showError('לא התקבלו נתונים');
     }
