@@ -1,6 +1,6 @@
 // --- Configuration ---
 // DEPLOYED WEB APP URL - this should point to your Google Apps Script Web App
-const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxTGmXaa26i-2RZvfs45BBpihiFu1yy3r3PeJgBodQJNNMU1ZW5QacPPxmGfnpCdJXC/exec';
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzbyYfR6VFdL5l0Epzz4vCBtwqPQkb2OUbCx9R1Cdw8qqP5snOvuS0ugbIRQqZ0_tw0Vw/exec';
 
 // --- DOM Elements ---
 const contentDiv = document.getElementById('content');
