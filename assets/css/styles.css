@@ -182,8 +182,13 @@ body {
     font-size: 8vw;
     white-space: normal; /* Allow wrapping on mobile */
     text-align: center;
-    margin-bottom: 0.3em;
+    padding: 1vw;
     max-width: 100%; /* Ensure it doesn't overflow mobile */
+  }
+
+  .footer {
+    font-size: 3vw;
+    padding: 1vw;
   }
 
   .clock {
