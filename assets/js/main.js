@@ -169,7 +169,7 @@ function renderSchedules(data) {
     card.className = `card ${isCompact ? 'compact' : ''} ${isMessages ? 'messages' : ''}`;
 
     // Only apply grid-column span on desktop
-    if (!isMobileDevice()) {
+    if (!isPortrait()) {
       card.style.gridColumn = `span ${isCompact ? spans.COMPACT : spans.REGULAR}`;
     }
 
@@ -200,10 +200,8 @@ function isCompactCard(title) {
   return title === CARD_TYPES.TIMES || title === CARD_TYPES.MESSAGES;
 }
 
-function isMobileDevice() {
-  return window.innerWidth <= 500 ||
-    (window.screen && window.screen.width <= 500) ||
-    (window.matchMedia && window.matchMedia('(max-width: 500px), (max-device-width: 500px)').matches);
+function isPortrait() {
+  return window.innerWidth < window.innerHeight;
 }
 
 function updateClock() {
@@ -216,10 +214,7 @@ function updateClock() {
 
 // --- Layout and Responsive Design ---
 function calculateGrid(data) {
-  // Check if we're on mobile - include iPhone detection
-  const isMobile = isMobileDevice();
-
-  if (isMobile) {
+  if (isPortrait()) {
     // On mobile, we use a single column layout with larger text
     mainGrid.style.gridTemplateColumns = '1fr';
     mainGrid.style.display = 'flex';
@@ -296,7 +291,6 @@ function optimizeFontSize(data) {
     }
   });
 
-  // Check for vertical overflow as well
   if (mainGrid.scrollHeight > mainGrid.clientHeight) {
     needsAdjustment = true;
   }
