@@ -81,73 +81,6 @@ async function fetchData() {
     }
 }
 
-// --- Rendering Functions ---
-function renderData(data) {
-    // Clear loading message
-    contentDiv.innerHTML = '';
-
-    if (!data || data.length === 0) {
-        contentDiv.innerHTML = '<p>אין נתונים להצגה כרגע.</p>';
-        return;
-    }
-
-    // Handle potential error object from GAS
-    if (data.error) {
-         displayError(data.error);
-         return;
-    }
-
-    data.forEach(section => {
-        const sectionDiv = document.createElement('div');
-
-        if (section.type === 'messages') {
-            sectionDiv.className = 'messages-section';
-            const titleElement = document.createElement('h2');
-            titleElement.textContent = section.title;
-            sectionDiv.appendChild(titleElement);
-
-            const list = document.createElement('ul');
-            section.messages.forEach(msg => {
-                const listItem = document.createElement('li');
-                // Assuming messages don't contain HTML. If they might, sanitize before setting innerHTML.
-                listItem.textContent = msg;
-                list.appendChild(listItem);
-            });
-            sectionDiv.appendChild(list);
-
-        } else if (section.type === 'schedule') {
-            sectionDiv.className = 'schedule-section';
-            const titleElement = document.createElement('h2');
-            titleElement.textContent = section.title;
-            sectionDiv.appendChild(titleElement);
-
-            const list = document.createElement('ul');
-            section.items.forEach(item => {
-                const listItem = document.createElement('li');
-                const labelSpan = document.createElement('span');
-                labelSpan.className = 'label';
-                labelSpan.textContent = item.label + ':'; // Add colon after label
-
-                const valueSpan = document.createElement('span');
-                valueSpan.className = 'value';
-                // Use innerHTML carefully - assumes formatValue in GAS creates safe HTML (like <strong>)
-                // If values could contain malicious HTML, sanitize it here!
-                valueSpan.innerHTML = item.value; // Use innerHTML to render formatting like <strong>
-
-                listItem.appendChild(labelSpan);
-                listItem.appendChild(valueSpan);
-                list.appendChild(listItem);
-            });
-            sectionDiv.appendChild(list);
-        }
-
-         // Only append the section if it has content (redundant due to GAS filter but safe)
-        if (sectionDiv.hasChildNodes()) {
-           contentDiv.appendChild(sectionDiv);
-        }
-    });
-}
-
 function renderSchedules(data) {
   mainGrid.innerHTML = '';
   const spans = calculateGrid(data);
@@ -353,9 +286,31 @@ function tryIncreaseFont(data, currentSize) {
 window.addEventListener('resize', () => {
   // Only run if grid has been initialized and we have data
   if (mainGrid.hasChildNodes() && currentData) {
-     console.log("Window resized, recalculating grid/font..."); // Optional debug
-     calculateGrid(currentData); // Use the stored data
-   }
+      console.log("Window resized/orientation changed, recalculating layout..."); // Optional debug
+
+      // 1. Recalculate main grid structure (columns/display) and trigger font size adjustment
+      //    'calculateGrid' already handles setting the mainGrid style and font size
+      //    based on the *new* orientation via isPortrait().
+      calculateGrid(currentData); // Use the stored data
+
+      // 2. Re-apply or remove grid-column spans on individual cards based on the NEW orientation
+      const portrait = isPortrait(); // Check the orientation *after* resize
+      const cards = mainGrid.querySelectorAll('.card'); // Get existing card elements
+
+      cards.forEach(card => {
+          if (portrait) {
+              // In portrait mode (mobile-grid), remove specific grid-column style.
+              // The flexbox layout defined in CSS for .mobile-grid takes over.
+              card.style.gridColumn = '';
+          } else {
+              // In landscape mode (desktop grid), re-apply the correct span.
+              // Determine span based on whether the card is compact or regular.
+              const isCompact = card.classList.contains('compact'); // Check class added during render
+              const span = isCompact ? COLUMN_SPANS.COMPACT : COLUMN_SPANS.REGULAR;
+              card.style.gridColumn = `span ${span}`;
+          }
+      });
+  }
 });
 
 // --- Data Update Check ---
