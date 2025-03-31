@@ -1,6 +1,6 @@
 // --- Configuration ---
 // DEPLOYED WEB APP URL - this should point to your Google Apps Script Web App
-const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzbyYfR6VFdL5l0Epzz4vCBtwqPQkb2OUbCx9R1Cdw8qqP5snOvuS0ugbIRQqZ0_tw0Vw/exec';
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwfeuyVub7ew6i4KFN7sHiYhjRBY_BL1QDfg1Uha-CFaS6zOPFrHi5V2T08Vp7l7zD_/exec';
 const updateInterval = 60 * 1000;
 
 // --- DOM Elements ---
