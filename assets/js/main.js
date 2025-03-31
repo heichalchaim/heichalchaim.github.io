@@ -228,6 +228,11 @@ function optimizeFontSize(data) {
     needsAdjustment = true;
   }
 
+  // Check if there is any overflow outside the window
+  if (document.body.scrollHeight > window.innerHeight) {
+    needsAdjustment = true;
+  }
+
   // If overflow detected, reduce font size and check again
   if (needsAdjustment && currentFontSize > MIN_FONT_SIZE) {
     currentFontSize -= 0.5;
@@ -269,6 +274,11 @@ function tryIncreaseFont(data, currentSize) {
     // Check for vertical overflow as well
     if (mainGrid.scrollHeight > mainGrid.clientHeight) {
       hasOverflow = true;
+    }
+
+      // Check if there is any overflow outside the window
+    if (document.body.scrollHeight > window.innerHeight) {
+      needsAdjustment = true;
     }
 
     // If increasing caused overflow, revert to previous size
