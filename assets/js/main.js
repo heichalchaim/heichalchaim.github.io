@@ -196,7 +196,7 @@ function findOptimalFontSize() {
   let max = MAX_FONT_SIZE;
   let current = Math.floor((min + max) / 2);
   let iterations = 0;
-  const maxIterations = 10; // Prevent infinite loops
+  const maxIterations = 20; // Prevent infinite loops
   let foundSize = null;
   
   function tryFontSize(size) {
