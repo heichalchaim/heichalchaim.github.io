@@ -5,6 +5,7 @@
   --border: rgba(0, 0, 0, 0.1);
   --error: #dc3545;
   --base-font-size: 16px;
+  --compact-font-size: 10px;
 }
 
 * {
@@ -148,7 +149,7 @@ body {
 }
 
 .card.compact {
-  font-size: 0.7em;
+  font-size: var(--compact-font-size);
 }
 
 .card.compact .card-header {

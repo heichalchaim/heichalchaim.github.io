@@ -149,6 +149,13 @@ function updateClock() {
 
 // --- Layout and Responsive Design ---
 
+function setFontSize(size) {
+  document.documentElement.style.setProperty('--base-font-size', `${size}px`);
+  const minisize = size * 0.7;
+  const compactSize = Math.round(minisize);
+  document.documentElement.style.setProperty('--compact-font-size', `${compactSize}px`);
+}
+
 // --- Set up the grid to fill available space ---
 function setupGrid(data) {
   // Calculate available height
@@ -163,7 +170,7 @@ function setupGrid(data) {
   // Set up columns based on orientation
   if (isPortrait()) {
     // For portrait: use fixed font size and simple layout
-    document.documentElement.style.setProperty('--base-font-size', `${PORTRAIT_FONT_SIZE}px`);
+    setFontSize(PORTRAIT_FONT_SIZE);
     mainGrid.style.gridTemplateColumns = '1fr';
     mainGrid.style.display = 'flex';
     mainGrid.style.flexDirection = 'column';
@@ -198,9 +205,10 @@ function findOptimalFontSize() {
   let iterations = 0;
   const maxIterations = 20; // Prevent infinite loops
   let foundSize = null;
+
   
   function tryFontSize(size) {
-    document.documentElement.style.setProperty('--base-font-size', `${size}px`);
+    setFontSize(size);
     return !checkForOverflow();
   }
   
@@ -223,7 +231,7 @@ function findOptimalFontSize() {
   // Apply the final size all at once
   if (foundSize === null || !tryFontSize(current)) {
     // If no size or current size still causes overflow, use the minimum successful size
-    document.documentElement.style.setProperty('--base-font-size', `${min}px`);
+    setFontSize(min);
   }
   
   // Make visible again with the final size applied
@@ -281,7 +289,7 @@ function optimizeDisplay(data) {
     
     if (cachedSize) {
       // Use cached size immediately to prevent flickering
-      document.documentElement.style.setProperty('--base-font-size', `${cachedSize}px`);
+      setFontSize(cachedSize);
       console.log(`Using cached font size: ${cachedSize}px`);
     } else {
       // Hide content during calculation
@@ -290,7 +298,7 @@ function optimizeDisplay(data) {
       // Give the DOM time to update before checking font size
       setTimeout(() => {
         // Set initial font size
-        document.documentElement.style.setProperty('--base-font-size', `${MAX_FONT_SIZE}px`);
+        setFontSize(MAX_FONT_SIZE);
         
         // After DOM updates, find optimal font size
         setTimeout(() => {
