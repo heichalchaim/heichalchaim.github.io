@@ -11,7 +11,6 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  image-rendering: pixelated;
 }
 
 html, body {
@@ -20,6 +19,8 @@ html, body {
 
 body {
   font-family: system-ui, sans-serif;
+  -webkit-font-smoothing: none;
+  image-rendering: pixelated;
   background: #f5f7fa;
   display: grid;
   grid-template-rows: auto 1fr auto;
