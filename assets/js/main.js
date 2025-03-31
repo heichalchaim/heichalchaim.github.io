@@ -1,7 +1,7 @@
 // --- Configuration ---
 // DEPLOYED WEB APP URL - this should point to your Google Apps Script Web App
 const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzbyYfR6VFdL5l0Epzz4vCBtwqPQkb2OUbCx9R1Cdw8qqP5snOvuS0ugbIRQqZ0_tw0Vw/exec';
-const updateInterval = 1000;//5 * 60 * 1000;
+const updateInterval = 60 * 1000;
 
 // --- DOM Elements ---
 const mainGrid = document.getElementById('mainGrid');
@@ -22,7 +22,9 @@ const COLUMN_SPANS = {
 
 // Add these constants for configurable font size limits
 const MIN_FONT_SIZE = 8; // Minimum font size
-const MAX_FONT_SIZE = 256; // Maximum font size
+const MAX_FONT_SIZE = 72; // Maximum font size
+const FONT_STEP = 0.5; // Step size for binary search
+const PORTRAIT_FONT_SIZE = 18; // Fixed reasonable font size for portrait mode
 
 // --- Functions ---
 function displayError(message) {
@@ -146,182 +148,210 @@ function updateClock() {
 }
 
 // --- Layout and Responsive Design ---
-function calculateGrid(data) {
+
+// --- Set up the grid to fill available space ---
+function setupGrid(data) {
+  // Calculate available height
+  const headerHeight = document.querySelector('.header').offsetHeight;
+  const footerHeight = document.querySelector('.footer').offsetHeight;
+  const availableHeight = window.innerHeight - headerHeight - footerHeight;
+  
+  // Set grid height to fill available space
+  mainGrid.style.height = `${availableHeight}px`;
+  mainGrid.style.maxHeight = `${availableHeight}px`;
+  
+  // Set up columns based on orientation
   if (isPortrait()) {
-    // On mobile, we use a single column layout with larger text
+    // For portrait: use fixed font size and simple layout
+    document.documentElement.style.setProperty('--base-font-size', `${PORTRAIT_FONT_SIZE}px`);
     mainGrid.style.gridTemplateColumns = '1fr';
     mainGrid.style.display = 'flex';
     mainGrid.style.flexDirection = 'column';
     mainGrid.classList.add('mobile-grid');
-
-    // Increase font size for mobile devices
-    const mobileFontSize = Math.max(16, Math.min(64, window.innerWidth / 20));
-    document.documentElement.style.setProperty('--base-font-size', `${mobileFontSize}px`);
-
+    return COLUMN_SPANS;
+  } else {
+    // For landscape: proceed with dynamic grid layout
+    const compactCount = data.filter(card => isCompactCard(card.title)).length;
+    const regularCount = data.length - compactCount;
+    const totalCols = (compactCount * COLUMN_SPANS.COMPACT) + (regularCount * COLUMN_SPANS.REGULAR);
+    
+    mainGrid.style.gridTemplateColumns = `repeat(${totalCols}, 1fr)`;
+    mainGrid.style.display = 'grid';
+    mainGrid.classList.remove('mobile-grid');
     return COLUMN_SPANS;
   }
-
-  // Desktop layout
-  const compactCount = data.filter(card => isCompactCard(card.title)).length;
-  const regularCount = data.length - compactCount;
-  const totalCols = (regularCount * COLUMN_SPANS.REGULAR) + (compactCount * COLUMN_SPANS.COMPACT);
-
-  mainGrid.style.gridTemplateColumns = `repeat(${totalCols}, 1fr)`;
-  mainGrid.style.display = 'grid';
-  mainGrid.classList.remove('mobile-grid');
-
-  // Calculate and set dynamic font size based on screen width and columns
-  adjustFontSize(totalCols, data);
-
-  return COLUMN_SPANS;
 }
 
-function adjustFontSize(totalColumns, data) {
-  const screenWidth = window.innerWidth;
-  const screenHeight = window.innerHeight;
-
-  // Base calculation on available width per column and height
-  const columnWidth = screenWidth / totalColumns;
-
-  // Calculate total rows across all cards
-  const totalRows = data.reduce((total, card) => {
-    return total + (card.type === 'messages' ? card.messages.length : card.items.length);
-  }, 0);
-
-  // Consider both width and height constraints
-  const widthBasedSize = Math.max(MIN_FONT_SIZE, Math.min(MAX_FONT_SIZE, columnWidth / 10));
-  const heightBasedSize = Math.max(MIN_FONT_SIZE, Math.min(MAX_FONT_SIZE, (screenHeight * 0.7) / totalRows));
-
-  // Use the smaller of the two to prevent overflow in either direction
-  let baseFontSize = Math.min(widthBasedSize, heightBasedSize);
-
-  document.documentElement.style.setProperty('--base-font-size', `${baseFontSize}px`);
-
-  // After rendering, check for text overflow and adjust if needed
-  setTimeout(() => {
-    optimizeFontSize(data);
-  }, 0);
+// --- Binary search for optimal font size (landscape only) ---
+function findOptimalFontSize() {
+  // Skip if in portrait mode
+  if (isPortrait()) {
+    return;
+  }
+  
+  // Apply visibility:hidden to prevent flickering during calculations
+  mainGrid.style.visibility = 'hidden';
+  
+  let min = MIN_FONT_SIZE;
+  let max = MAX_FONT_SIZE;
+  let current = Math.floor((min + max) / 2);
+  let iterations = 0;
+  const maxIterations = 10; // Prevent infinite loops
+  let foundSize = null;
+  
+  function tryFontSize(size) {
+    document.documentElement.style.setProperty('--base-font-size', `${size}px`);
+    return !checkForOverflow();
+  }
+  
+  // Start binary search
+  while (max - min > FONT_STEP && iterations < maxIterations) {
+    iterations++;
+    
+    if (tryFontSize(current)) {
+      // Current size works, try larger
+      min = current;
+      foundSize = current; // Keep track of last successful size
+    } else {
+      // Current size is too big, try smaller
+      max = current;
+    }
+    
+    current = (min + max) / 2;
+  }
+  
+  // Apply the final size all at once
+  if (foundSize === null || !tryFontSize(current)) {
+    // If no size or current size still causes overflow, use the minimum successful size
+    document.documentElement.style.setProperty('--base-font-size', `${min}px`);
+  }
+  
+  // Make visible again with the final size applied
+  mainGrid.style.visibility = 'visible';
+  
+  // Debug output
+  console.log(`Optimal font size found: ${parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--base-font-size'))}`);
 }
 
-function optimizeFontSize(data) {
-  // Get all rows to check for overflow
+// --- Check if any element has overflow ---
+function checkForOverflow() {
+  // Check if grid has vertical overflow
+  if (mainGrid.scrollHeight > mainGrid.clientHeight) {
+    return true;
+  }
+  
+  // Check each row for text overflow
   const rows = document.querySelectorAll('.row');
-  let currentFontSize = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--base-font-size'));
-  let needsAdjustment = false;
-
-  // Check each row for overflow
-  rows.forEach(row => {
+  for (const row of rows) {
     const label = row.querySelector('.label');
     const value = row.querySelector('.value');
-
-    // Check if either label or value is overflowing
-    if (label && (label.scrollWidth > label.clientWidth)) {
-      needsAdjustment = true;
+    
+    if ((label && label.scrollWidth > label.clientWidth) ||
+        (value && value.scrollWidth > value.clientWidth)) {
+      return true;
     }
-
-    if (value && (value.scrollWidth > value.clientWidth)) {
-      needsAdjustment = true;
+  }
+  
+  // Check card headers for overflow
+  const headers = document.querySelectorAll('.card-header');
+  for (const header of headers) {
+    if (header.scrollWidth > header.clientWidth) {
+      return true;
     }
-  });
-
-  if (mainGrid.scrollHeight > mainGrid.clientHeight) {
-    needsAdjustment = true;
   }
-
-  // Check if there is any overflow outside the window
-  if (document.body.scrollHeight > window.innerHeight) {
-    needsAdjustment = true;
-  }
-
-  // If overflow detected, reduce font size and check again
-  if (needsAdjustment && currentFontSize > MIN_FONT_SIZE) {
-    currentFontSize -= 0.5;
-    document.documentElement.style.setProperty('--base-font-size', `${currentFontSize}px`);
-
-    // Recursively check again after DOM update
-    setTimeout(() => {
-      optimizeFontSize(data);
-    }, 10);
-  } else if (!needsAdjustment) {
-    // Try to increase font size if possible
-    tryIncreaseFont(data, currentFontSize);
-  }
+  
+  return false;
 }
 
-function tryIncreaseFont(data, currentSize) {
-  // Increase font size slightly
-  const newSize = currentSize + 0.5;
-  document.documentElement.style.setProperty('--base-font-size', `${newSize}px`);
+// Cache for previously calculated font sizes
+const fontSizeCache = {
+  // Format: 'width-height-cardCount': fontSize
+};
 
-  // Check if this causes overflow
-  setTimeout(() => {
-    const rows = document.querySelectorAll('.row');
-    let hasOverflow = false;
-
-    rows.forEach(row => {
-      const label = row.querySelector('.label');
-      const value = row.querySelector('.value');
-
-      if (label && (label.scrollWidth > label.clientWidth)) {
-        hasOverflow = true;
-      }
-
-      if (value && (value.scrollWidth > value.clientWidth)) {
-        hasOverflow = true;
-      }
-    });
-
-    // Check for vertical overflow as well
-    if (mainGrid.scrollHeight > mainGrid.clientHeight) {
-      hasOverflow = true;
+// --- Main function to optimize grid and font ---
+function optimizeDisplay(data) {
+  // First set up the grid
+  const spans = setupGrid(data);
+  
+  // If in landscape mode, proceed with font optimization
+  if (!isPortrait()) {
+    // Try to use cached font size first
+    const cacheKey = `${window.innerWidth}-${window.innerHeight}-${data.length}`;
+    const cachedSize = fontSizeCache[cacheKey];
+    
+    if (cachedSize) {
+      // Use cached size immediately to prevent flickering
+      document.documentElement.style.setProperty('--base-font-size', `${cachedSize}px`);
+      console.log(`Using cached font size: ${cachedSize}px`);
+    } else {
+      // Hide content during calculation
+      mainGrid.style.visibility = 'hidden';
+      
+      // Give the DOM time to update before checking font size
+      setTimeout(() => {
+        // Set initial font size
+        document.documentElement.style.setProperty('--base-font-size', `${MAX_FONT_SIZE}px`);
+        
+        // After DOM updates, find optimal font size
+        setTimeout(() => {
+          findOptimalFontSize();
+          
+          // Cache the result for future use
+          const newSize = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--base-font-size'));
+          fontSizeCache[cacheKey] = newSize;
+        }, 50);
+      }, 50);
     }
-
-      // Check if there is any overflow outside the window
-    if (document.body.scrollHeight > window.innerHeight) {
-      needsAdjustment = true;
-    }
-
-    // If increasing caused overflow, revert to previous size
-    if (hasOverflow) {
-      document.documentElement.style.setProperty('--base-font-size', `${currentSize}px`);
-    } else if (newSize < MAX_FONT_SIZE) {
-      // If no overflow and size is still reasonable, try increasing more
-      tryIncreaseFont(data, newSize);
-    }
-  }, 10);
+  }
+  
+  return spans;
 }
 
-// --- Event Listeners ---
-// Recalculate grid and font size when window is resized
-window.addEventListener('resize', () => {
-  // Only run if grid has been initialized and we have data
+// --- Replace the old functions ---
+function calculateGrid(data) {
+  return optimizeDisplay(data);
+}
+
+// --- Debounce function to prevent multiple resize calculations ---
+function debounce(func, wait) {
+  let timeout;
+  return function(...args) {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func.apply(this, args), wait);
+  };
+}
+
+// --- Update the resize handler with debouncing ---
+window.addEventListener('resize', debounce(() => {
   if (mainGrid.hasChildNodes() && currentData) {
-      console.log("Window resized/orientation changed, recalculating layout..."); // Optional debug
-
-      // 1. Recalculate main grid structure (columns/display) and trigger font size adjustment
-      //    'calculateGrid' already handles setting the mainGrid style and font size
-      //    based on the *new* orientation via isPortrait().
-      calculateGrid(currentData); // Use the stored data
-
-      // 2. Re-apply or remove grid-column spans on individual cards based on the NEW orientation
-      const portrait = isPortrait(); // Check the orientation *after* resize
-      const cards = mainGrid.querySelectorAll('.card'); // Get existing card elements
-
+    // Check if orientation changed (more significant than just slight resize)
+    const wasPortrait = mainGrid.classList.contains('mobile-grid');
+    const isNowPortrait = isPortrait();
+    
+    if (wasPortrait !== isNowPortrait || Math.abs(window.innerWidth - lastWidth) > 100) {
+      optimizeDisplay(currentData);
+      
+      // Update card spans
+      const cards = mainGrid.querySelectorAll('.card');
+      
       cards.forEach(card => {
-          if (portrait) {
-              // In portrait mode (mobile-grid), remove specific grid-column style.
-              // The flexbox layout defined in CSS for .mobile-grid takes over.
-              card.style.gridColumn = '';
-          } else {
-              // In landscape mode (desktop grid), re-apply the correct span.
-              // Determine span based on whether the card is compact or regular.
-              const isCompact = card.classList.contains('compact'); // Check class added during render
-              const span = isCompact ? COLUMN_SPANS.COMPACT : COLUMN_SPANS.REGULAR;
-              card.style.gridColumn = `span ${span}`;
-          }
+        if (isNowPortrait) {
+          card.style.gridColumn = '';
+        } else {
+          const isCompact = card.classList.contains('compact');
+          const span = isCompact ? COLUMN_SPANS.COMPACT : COLUMN_SPANS.REGULAR;
+          card.style.gridColumn = `span ${span}`;
+        }
       });
+      
+      // Store current width for future comparison
+      lastWidth = window.innerWidth;
+    }
   }
-});
+}, 150)); // 150ms debounce time
+
+// Track window width to detect significant changes
+let lastWidth = window.innerWidth;
 
 // --- Data Update Check ---
 async function checkForUpdates() {
