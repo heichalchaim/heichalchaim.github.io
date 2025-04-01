@@ -23,12 +23,13 @@ body {
   font-smooth: never;
   -webkit-font-smoothing: none;
   -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
+  text-rendering: geometricPrecision;
   background: #f5f7fa;
   display: grid;
   grid-template-rows: auto 1fr auto;
   font-size: var(--base-font-size);
   overflow: hidden;
+  transform: translateZ(0)
 }
 
 .header {
@@ -219,7 +220,7 @@ body {
 /* Add this to your existing CSS */
 .loading {
   text-align: center;
-  font-size: 1.5rem;
+  font-size: 2rem;
   padding: 2rem;
   width: 100%;
 }
