@@ -1,10 +1,11 @@
 // --- Configuration ---
+// DEPLOYED WEB APP URL - this should point to your Google Apps Script Web App
 const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzLXwvmQ2uTSbW0kCVAupFRwhK9hEEpQ2651MiQpZehhYteoCQlsbsMWRvMz5WcFKO7lg/exec';
 const updateInterval = 60 * 1000;
 
 // --- DOM Elements ---
 const mainGrid = document.getElementById('mainGrid');
-const clockElement = document.getElementById('clock'); // Added for clarity
+const clockElement = document.getElementById('clock');
 
 // --- Global State ---
 let currentData = null; // To store the currently displayed data
@@ -75,24 +76,33 @@ function checkForOverflow() {
         return true;
     }
 
-    // Check each row for text overflow
-    const rows = document.querySelectorAll('.card-body .row');
-    for (const row of rows) {
-        const label = row.querySelector('.label');
-        const value = row.querySelector('.value');
-
-        if ((label && label.scrollWidth > label.clientWidth + 1) || // Add tolerance
-            (value && value.scrollWidth > value.clientWidth + 1)) { // Add tolerance
-            console.log('Row text overflow detected!');
+    // NEW: Check each card-body for vertical overflow
+    const cardBodies = document.querySelectorAll('.card-body');
+    for (const body of cardBodies) {
+        if (body.scrollHeight > body.clientHeight + 1) { // Add tolerance
+            console.log('Card body vertical overflow detected!');
             return true;
         }
     }
 
-    // Check card headers for overflow
+    // Check each row for text horizontal overflow
+    const rows = document.querySelectorAll('.card-body .row'); // Be more specific to .card-body rows
+    for (const row of rows) {
+        const label = row.querySelector('.label');
+        const value = row.querySelector('.value');
+
+        if ((label && label.scrollWidth > label.clientWidth + 1) ||
+            (value && value.scrollWidth > value.clientWidth + 1)) {
+            console.log('Row text horizontal overflow detected!');
+            return true;
+        }
+    }
+
+    // Check card headers for horizontal overflow
     const headers = document.querySelectorAll('.card-header');
     for (const header of headers) {
-        if (header.scrollWidth > header.clientWidth + 1) { // Add tolerance
-            console.log('Header text overflow detected!');
+        if (header.scrollWidth > header.clientWidth + 1) {
+            console.log('Header text horizontal overflow detected!');
             return true;
         }
     }
@@ -213,7 +223,8 @@ function setupGridAndFont(data) {
             mainGrid.style.gridTemplateColumns = `repeat(${totalCols}, 1fr)`;
 
             // Try to use cached font size first
-            const cacheKey = `${window.innerWidth}-${window.innerHeight}-${data.length}-${JSON.stringify(data.map(d => d.title))}`;
+            // Cache key includes content count for more robust invalidation
+            const cacheKey = `${window.innerWidth}-${window.innerHeight}-${data.length}-${JSON.stringify(data.map(d => ({title: d.title, contentCount: d.type === 'messages' ? d.messages.length : d.items.length})))}`;
             const cachedSize = fontSizeCache[cacheKey];
 
             if (cachedSize) {
