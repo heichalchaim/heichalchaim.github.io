@@ -1,6 +1,8 @@
 // --- Configuration ---
 // DEPLOYED WEB APP URL - this should point to your Google Apps Script Web App
-const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzLXwvmQ2uTSbW0kCVAupFRwhK9hEEpQ2651MiQpZehhYteoCQlsbsMWRvMz5WcFKO7lg/exec';
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxWJaLCR3wIISYnikIXhBeh0nIa2NGCtthowQ4EMsulGhZUC0afC1CwJHwj8jmRGLLaQg/exec';
+// const WEB_APP_URL = 'https://script.googleusercontent.com/macros/echo?user_content_key=AehSKLgYuJmgj7rUVYPlnnD18U0kJX8AgnzXjavm0Y0xiWkDlcJRGIlw5rhUOJPPgnqBMXnPz0ZdTLv-mytPosbrWAlirWv6wUHTsIEmT6dmpHRoJGW01Udwi7USyObi1pNQRd_3zaNN41AzsfCfdACmX63O6EQ-GuArcobrnICg_1IITdNZWD3F5JLcrHzbqLwPemZSNawCvgKFXcc5IWcj9ouC3JjzP_NFJrc22JRfafx9EMLaMgsk_1qN4gbDwg&lib=MxMS4mo0rnooDpY0uInpSrv-iqeGpJxSDhttps://script.google.com/macros/s/AKfycbxPqfwK-pMr8l7dnukJok5-jk4usz0qB-DSZarX_vsk/dev';
+
 const updateInterval = 60 * 1000;
 
 // --- DOM Elements ---
@@ -213,6 +215,12 @@ function setupGridAndFont(data) {
             mainGrid.style.visibility = 'visible'; // Make visible after portrait adjustments
         } else {
             // For landscape: proceed with dynamic grid layout and font optimization
+            // Assume Full HD resolution for consistent scaling
+            const fullHDWidth = 1920;
+            const scaleFactor = window.innerWidth / fullHDWidth;
+            const scaledMinFontSize = MIN_FONT_SIZE * scaleFactor;
+            const scaledMaxFontSize = MAX_FONT_SIZE * scaleFactor;
+
             mainGrid.classList.remove('mobile-grid');
             mainGrid.style.display = 'grid'; // Ensure grid display for landscape
 
@@ -220,6 +228,7 @@ function setupGridAndFont(data) {
             const compactCount = data.filter(card => isCompactCard(card.title)).length;
             const regularCount = data.length - compactCount;
             const totalCols = (compactCount * COLUMN_SPANS.COMPACT) + (regularCount * COLUMN_SPANS.REGULAR);
+
             mainGrid.style.gridTemplateColumns = `repeat(${totalCols}, 1fr)`;
 
             // Try to use cached font size first
@@ -227,18 +236,17 @@ function setupGridAndFont(data) {
             const cacheKey = `${window.innerWidth}-${window.innerHeight}-${data.length}-${JSON.stringify(data.map(d => ({title: d.title, contentCount: d.type === 'messages' ? d.messages.length : d.items.length})))}`;
             const cachedSize = fontSizeCache[cacheKey];
 
+
             if (cachedSize) {
                 setFontSize(cachedSize);
                 console.log(`Using cached font size: ${cachedSize}px`);
                 mainGrid.style.visibility = 'visible'; // Make visible immediately
             } else {
                 // Initial large font size for binary search
-                setFontSize(MAX_FONT_SIZE);
+                setFontSize(scaledMaxFontSize);
 
-                // Wait for a small moment for styles to apply before measuring overflow
-                requestAnimationFrame(() => {
-                    let min = MIN_FONT_SIZE;
-                    let max = MAX_FONT_SIZE;
+                requestAnimationFrame(() => {                    let min = scaledMinFontSize;
+                    let max = scaledMaxFontSize;
                     let foundSize = null;
                     let iterations = 0;
                     const maxIterations = 30; // Increased iterations for more precision
