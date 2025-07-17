@@ -16,7 +16,7 @@ const COLUMN_SPANS = {
 };
 const MIN_FONT_SIZE = 8;
 const MAX_FONT_SIZE = 120;
-const FONT_STEP = 0.01;
+const FONT_STEP = 0.1;
 const PORTRAIT_FONT_SIZE = 18;
 const COMPACT_FONT_RATIO = 0.75;
 
@@ -271,8 +271,8 @@ function debounce(func, wait) {
 window.addEventListener('resize', debounce(() => {
     const currentWindowSize = { width: window.innerWidth, height: window.innerHeight };
     const orientationChanged = isPortrait() !== (lastWindowSize.width < lastWindowSize.height);
-    const sizeChanged = Math.abs(currentWindowSize.width - lastWindowSize.width) > 10 ||
-                        Math.abs(currentWindowSize.height - lastWindowSize.height) > 10;
+    const sizeChanged = Math.abs(currentWindowSize.width - lastWindowSize.width) > 1 ||
+                        Math.abs(currentWindowSize.height - lastWindowSize.height) > 1;
     if (orientationChanged || sizeChanged) {
         updateDisplay();
         lastWindowSize = currentWindowSize;
@@ -320,11 +320,11 @@ function setHeaderAndFooter() {
 
 // --- Initialization ---
 window.onload = async () => {
+    mainGrid.innerHTML = '<div class="loading">טוען נתונים...</div>';
     try {
         setInterval(updateClock, 1000);
         updateClock();
         setHeaderAndFooter();
-        mainGrid.innerHTML = '<div class="loading">טוען נתונים...</div>';
         const initialData = await fetchData();
         if (initialData) {
             currentData = initialData;
