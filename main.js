@@ -15,8 +15,8 @@ const COLUMN_SPANS = {
     REGULAR: 5
 };
 const MIN_FONT_SIZE = 8;
-const MAX_FONT_SIZE = 120;
-const FONT_STEP = 0.1;
+const MAX_FONT_SIZE = 72;
+const FONT_STEP = 0.01;
 const PORTRAIT_FONT_SIZE = 18;
 const COMPACT_FONT_RATIO = 0.75;
 
@@ -88,31 +88,50 @@ function setFontSize(size) {
  * @returns {boolean}
  */
 function checkForOverflow() {
-    // Main grid vertical overflow
-    if (mainGrid.scrollHeight > mainGrid.clientHeight) return true;
+    let overflowDetected = false; // Keep track if any overflow is detected
 
-    // Card body vertical overflow
+    // Check for vertical overflow in the main grid.
+    // If the scrollable content height exceeds the visible height, there's overflow.
+    if (mainGrid.scrollHeight > mainGrid.clientHeight) {
+        console.log('checkForOverflow: Main grid vertical overflow detected.');
+        overflowDetected = true;
+    }
+
+    // Check for vertical overflow within individual card bodies.
     const cardBodies = document.querySelectorAll('.card-body');
     for (const body of cardBodies) {
-        if (body.scrollHeight > body.clientHeight) return true;
+        if (body.scrollHeight > body.clientHeight) {
+            console.log('checkForOverflow: Card body vertical overflow detected:', body);
+            overflowDetected = true;
+            break; // Exit after detecting overflow in one card body
+        }
     }
 
-    // Row horizontal overflow (label + value)
+    // Check for horizontal overflow within rows (label and value).
     const rows = document.querySelectorAll('.card-body .row');
-    for (const row of rows) {
+    if (!overflowDetected) { // Only check rows if no other overflow has been found
+        for (const row of rows) {
         const label = row.querySelector('.label');
         const value = row.querySelector('.value');
-        // If label or value needs to scroll horizontally
-        if ((label && label.scrollWidth > label.clientWidth) ||
-            (value && value.scrollWidth > value.clientWidth)) {
-            return true;
+
+        // Check if either the label or value content overflows its container.
+        if ((label && label.scrollWidth > label.clientWidth) || (value && value.scrollWidth > value.clientWidth)) {
+            console.log('checkForOverflow: Row content horizontal overflow detected:', row, label, value);
+            overflowDetected = true;
+            break;  // Exit after detecting overflow in one row
         }
-        // If combined label+value content is wider than the row
-        if (label && value && (label.scrollWidth + value.scrollWidth > row.clientWidth)) {
-            return true;
+
+        // Check if the combined width of label and value exceeds the row's width,
+        // even if neither overflows individually (indicates they don't fit side-by-side).
+            if (label && value && label.scrollWidth + value.scrollWidth > row.clientWidth) {
+                console.log('checkForOverflow: Row content combined width overflow detected:', row, label, value);
+                overflowDetected = true;
+                break;  // Exit after detecting overflow in one row
+            }
         }
     }
-    return false;
+
+    return overflowDetected; // Return true if any overflow was detected, otherwise return false.
 }
 
 // --- Data Fetching ---
@@ -198,50 +217,88 @@ function setupGridAndFont(data) {
     mainGrid.style.visibility = 'hidden';
 
     if (isPortrait()) {
-        setFontSize(PORTRAIT_FONT_SIZE);
-        mainGrid.style.gridTemplateColumns = '1fr';
-        mainGrid.style.display = 'flex';
-        mainGrid.style.flexDirection = 'column';
-        mainGrid.classList.add('mobile-grid');
-        mainGrid.style.visibility = 'visible';
+        setupPortraitLayout(data);
     } else {
-        mainGrid.classList.remove('mobile-grid');
-        mainGrid.style.display = 'grid';
-        const compactCount = data.filter(card => isCompactCard(card.title)).length;
-        const regularCount = data.length - compactCount;
-        const totalCols = (compactCount * COLUMN_SPANS.COMPACT) + (regularCount * COLUMN_SPANS.REGULAR);
-        mainGrid.style.gridTemplateColumns = `repeat(${totalCols}, 1fr)`;
-        setFontSize(MAX_FONT_SIZE);
-        let min = MIN_FONT_SIZE;
-        let max = MAX_FONT_SIZE;
-        let foundSize = null;
-        let iterations = 0;
-        const maxIterations = 100;
-        while (max - min > FONT_STEP && iterations < maxIterations) {
-            iterations++;
-            const current = (min + max) / 2;
-            setFontSize(current);
-            if (!checkForOverflow()) {
-                min = current;
-                foundSize = current;
-            } else {
-                max = current;
-            }
-        }
-        setFontSize(foundSize !== null ? foundSize : MIN_FONT_SIZE);
-        mainGrid.style.visibility = 'visible';
+        setupLandscapeLayout(data);
     }
+
     // Update card spans after grid setup
     const cards = mainGrid.querySelectorAll('.card');
     cards.forEach(card => {
         if (isPortrait()) {
             card.style.gridColumn = '';
         } else {
-            const isCompact = card.classList.contains('compact');
-            const span = isCompact ? COLUMN_SPANS.COMPACT : COLUMN_SPANS.REGULAR;
-            card.style.gridColumn = `span ${span}`;
+            setCardColumnSpan(card);
         }
     });
+}
+
+function setupPortraitLayout(data) {
+    setFontSize(PORTRAIT_FONT_SIZE);
+    mainGrid.style.gridTemplateColumns = '1fr';
+    mainGrid.style.display = 'flex';
+    mainGrid.style.flexDirection = 'column';
+    mainGrid.classList.add('mobile-grid');
+    mainGrid.style.visibility = 'visible';
+}
+
+function setupLandscapeLayout(data) {
+    mainGrid.classList.remove('mobile-grid');
+    mainGrid.style.display = 'grid';
+    const totalCols = calculateTotalColumns(data);
+    mainGrid.style.gridTemplateColumns = `repeat(${totalCols}, 1fr)`;
+    const optimalFontSize = findOptimalFontSize();
+    setFontSize(optimalFontSize);
+    mainGrid.style.visibility = 'visible';
+}
+
+function calculateTotalColumns(data) {
+    const compactCount = data.filter(card => isCompactCard(card.title)).length;
+    const regularCount = data.length - compactCount;
+    return (compactCount * COLUMN_SPANS.COMPACT) + (regularCount * COLUMN_SPANS.REGULAR);
+}
+
+function setCardColumnSpan(card) {
+    const isCompact = card.classList.contains('compact');
+    const span = isCompact ? COLUMN_SPANS.COMPACT : COLUMN_SPANS.REGULAR;
+    card.style.gridColumn = `span ${span}`;
+}
+
+/**
+ * Uses a binary search to find the largest possible font size that
+ * does not cause content to overflow within the grid cards.
+ * @returns {number} The optimal font size.
+ */
+function findOptimalFontSize() {
+    // Set a large initial font size to measure against for overflow
+    setFontSize(MAX_FONT_SIZE);
+    let min = MIN_FONT_SIZE;
+    let max = MAX_FONT_SIZE;
+    let foundSize = null;
+    let iterations = 0;
+    const maxIterations = 100; // Safety break to prevent infinite loops
+    while (max - min > FONT_STEP && iterations < maxIterations) {
+        console.log(`findOptimalFontSize: min=${min}, max=${max}, iterations=${iterations}`);
+        iterations++;
+        const current = (min + max) / 2;
+        setFontSize(current);
+        if (!checkForOverflow()) {
+            min = current; // This size is valid, let's try a larger one
+            foundSize = current;
+        } else {
+            max = current; // This size is too big, let's try a smaller one
+        }
+    }
+
+    if (iterations >= maxIterations) {
+        // This warning helps diagnose if the binary search is failing to converge, which is unexpected.
+        console.warn(`findOptimalFontSize reached max iterations (${maxIterations}). The font size might not be optimal.`);
+    }
+
+    // If a valid size that doesn't cause overflow was ever found, use it.
+    // Otherwise, it means even the smallest sizes caused overflow, so we fall back to the absolute minimum.
+    const finalSize = foundSize !== null ? foundSize : MIN_FONT_SIZE;
+    return finalSize;
 }
 
 // --- Central Display Update Function ---
@@ -334,6 +391,3 @@ window.onload = async () => {
         showError('Error during initial load: ' + error.message);
     }
 };
-
-
-

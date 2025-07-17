@@ -9,8 +9,8 @@
   --error: #dc3545;
   --base-font-size: 16px;
   --compact-font-size: 0.75rem;
-  --border-radius: 0.4em;
-  --card-padding: 0.2em 1em;
+  --border-radius: 0.4rem;
+  --card-padding: 0.2rem 1rem;
 }
 
 /* =====================
@@ -28,15 +28,13 @@ html, body {
 
 body {
   font-family: system-ui, sans-serif;
-  font-smooth: never;
-  -webkit-font-smoothing: none;
-  -moz-osx-font-smoothing: grayscale;
-  text-rendering: geometricPrecision;
   background: #f5f7fa;
   display: grid;
   grid-template-rows: auto 1fr auto;
   font-size: var(--base-font-size);
   overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   transform: translateZ(0);
 }
 
@@ -86,7 +84,6 @@ body {
   gap: 0.5em;
   height: 100%;
   grid-auto-rows: 1fr;
-  overflow-y: scroll;
 }
 .grid::-webkit-scrollbar {
   display: none;
@@ -111,7 +108,6 @@ body {
   border-radius: var(--border-radius) var(--border-radius) 0 0;
   text-align: center;
   font-size: 1.4em;
-  text-overflow: ellipsis;
 }
 
 .card-body {
@@ -126,7 +122,6 @@ body {
   justify-content: space-between;
   align-items: center;
   padding: 0.4em 0.2em;
-  text-overflow: ellipsis;
   border-bottom: 0.1em solid var(--border);
 }
 
