@@ -78,7 +78,7 @@ function updateClock() {
  */
 function setFontSize(size) {
     document.documentElement.style.setProperty('--base-font-size', `${size}px`);
-    const compactSize = Math.round(size * 0.7);
+    const compactSize = Math.round(size * 0.75);
     document.documentElement.style.setProperty('--compact-font-size', `${compactSize}px`);
 }
 
