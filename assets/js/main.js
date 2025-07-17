@@ -296,26 +296,7 @@ async function checkForUpdates() {
     }
 }
 
-// --- Initialization ---
-window.onload = async () => {
-    try {
-        setInterval(updateClock, 1000);
-        updateClock();
-        mainGrid.innerHTML = '<div class="loading">טוען נתונים...</div>';
-        const initialData = await fetchData();
-        if (initialData) {
-            currentData = initialData;
-            updateDisplay();
-            setInterval(checkForUpdates, UPDATE_INTERVAL);
-        } else {
-            showError('לא התקבלו נתונים או שגיאה בטעינתם הראשונית.');
-        }
-    } catch (error) {
-        showError('Error during initial load: ' + error.message);
-    }
-};
-
-document.addEventListener('DOMContentLoaded', () => {
+function setHeaderAndFooter() {
   /**
    * Application constants for UI strings.
    * Centralizing them here makes maintenance easier.
@@ -339,5 +320,27 @@ document.addEventListener('DOMContentLoaded', () => {
   if (footerElement) {
     footerElement.textContent = UI_TEXT.FOOTER_DEDICATION;
   }
-});
+};
+
+// --- Initialization ---
+window.onload = async () => {
+    try {
+        setInterval(updateClock, 1000);
+        updateClock();
+        setHeaderAndFooter();
+        mainGrid.innerHTML = '<div class="loading">טוען נתונים...</div>';
+        const initialData = await fetchData();
+        if (initialData) {
+            currentData = initialData;
+            updateDisplay();
+            setInterval(checkForUpdates, UPDATE_INTERVAL);
+        } else {
+            showError('לא התקבלו נתונים או שגיאה בטעינתם הראשונית.');
+        }
+    } catch (error) {
+        showError('Error during initial load: ' + error.message);
+    }
+};
+
+
 
