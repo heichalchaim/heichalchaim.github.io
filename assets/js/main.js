@@ -15,7 +15,7 @@ const COLUMN_SPANS = {
     REGULAR: 5
 };
 const MIN_FONT_SIZE = 8;
-const MAX_FONT_SIZE = 72;
+const MAX_FONT_SIZE = 120;
 const FONT_STEP = 0.01;
 const PORTRAIT_FONT_SIZE = 18;
 const COMPACT_FONT_RATIO = 0.75;
@@ -199,10 +199,6 @@ function setupGridAndFont(data) {
         mainGrid.classList.add('mobile-grid');
         mainGrid.style.visibility = 'visible';
     } else {
-        const fullHDWidth = 1920;
-        const scaleFactor = window.innerWidth / fullHDWidth;
-        const scaledMinFontSize = MIN_FONT_SIZE * scaleFactor;
-        const scaledMaxFontSize = MAX_FONT_SIZE * scaleFactor;
         mainGrid.classList.remove('mobile-grid');
         mainGrid.style.display = 'grid';
         const compactCount = data.filter(card => isCompactCard(card.title)).length;
@@ -215,12 +211,12 @@ function setupGridAndFont(data) {
             setFontSize(cachedSize);
             mainGrid.style.visibility = 'visible';
         } else {
-            setFontSize(scaledMaxFontSize);
-            let min = scaledMinFontSize;
-            let max = scaledMaxFontSize;
+            setFontSize(MAX_FONT_SIZE);
+            let min = MIN_FONT_SIZE;
+            let max = MAX_FONT_SIZE;
             let foundSize = null;
             let iterations = 0;
-            const maxIterations = 30;
+            const maxIterations = 100;
             while (max - min > FONT_STEP && iterations < maxIterations) {
                 iterations++;
                 const current = (min + max) / 2;
