@@ -8,8 +8,8 @@
   --border: rgba(0, 0, 0, 0.1);
   --error: #dc3545;
   --base-font-size: 16px;
-  --compact-font-size: 10px;
-  --border-radius: 8px;
+  --compact-font-size: 0.75rem;
+  --border-radius: 0.4em;
   --card-padding: 0.2em 1em;
 }
 
@@ -98,7 +98,7 @@ body {
 .card {
   background: var(--white);
   border-radius: var(--border-radius);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 0.1em 0.2em rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
 }
@@ -106,7 +106,7 @@ body {
 .card-header {
   background: var(--primary);
   color: var(--white);
-  padding: 0.3em 0;
+  padding: 0.3em 0.1em;
   font-weight: 600;
   border-radius: var(--border-radius) var(--border-radius) 0 0;
   text-align: center;
@@ -125,8 +125,8 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.4em 0;
-  border-bottom: 1px solid var(--border);
+  padding: 0.4em 0.1em;
+  border-bottom: 0.1em solid var(--border);
 }
 
 .row:last-child {
@@ -156,7 +156,7 @@ body {
 }
 .card.messages .card-header {
   background: none;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  border-bottom: 0.1em solid rgba(255, 255, 255, 0.2);
 }
 .card.compact {
   font-size: var(--compact-font-size);

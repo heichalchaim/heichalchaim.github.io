@@ -16,8 +16,9 @@ const COLUMN_SPANS = {
 };
 const MIN_FONT_SIZE = 8;
 const MAX_FONT_SIZE = 72;
-const FONT_STEP = 0.2;
+const FONT_STEP = 0.01;
 const PORTRAIT_FONT_SIZE = 18;
+const COMPACT_FONT_RATIO = 0.75;
 
 // --- DOM Elements ---
 const mainGrid = document.getElementById('mainGrid');
@@ -78,7 +79,7 @@ function updateClock() {
  */
 function setFontSize(size) {
     document.documentElement.style.setProperty('--base-font-size', `${size}px`);
-    const compactSize = Math.round(size * 0.75);
+    const compactSize = Math.round(size * COMPACT_FONT_RATIO);
     document.documentElement.style.setProperty('--compact-font-size', `${compactSize}px`);
 }
 
@@ -210,7 +211,7 @@ function setupGridAndFont(data) {
         mainGrid.style.gridTemplateColumns = `repeat(${totalCols}, 1fr)`;
         const cacheKey = `${window.innerWidth}-${window.innerHeight}-${data.length}-${JSON.stringify(data.map(d => ({title: d.title, contentCount: d.type === 'messages' ? d.messages.length : d.items.length})))}`;
         const cachedSize = fontSizeCache[cacheKey];
-        if (cachedSize) {
+        if (cachedSize && !checkForOverflow()) {
             setFontSize(cachedSize);
             mainGrid.style.visibility = 'visible';
         } else {
@@ -313,3 +314,30 @@ window.onload = async () => {
         showError('Error during initial load: ' + error.message);
     }
 };
+
+document.addEventListener('DOMContentLoaded', () => {
+  /**
+   * Application constants for UI strings.
+   * Centralizing them here makes maintenance easier.
+   */
+  const UI_TEXT = {
+    SITE_TITLE: 'בית הכנסת היכל חיים',
+    FOOTER_DEDICATION: 'לעלוי נשמת יהושע בן ישראל איסר ז"ל',
+  };
+
+  // Update the page title
+  document.title = UI_TEXT.SITE_TITLE;
+
+  // Update the main heading
+  const mainTitleElement = document.getElementById('main-title');
+  if (mainTitleElement) {
+    mainTitleElement.textContent = UI_TEXT.SITE_TITLE;
+  }
+
+  // Update the footer
+  const footerElement = document.getElementById('footer-dedication');
+  if (footerElement) {
+    footerElement.textContent = UI_TEXT.FOOTER_DEDICATION;
+  }
+});
+
