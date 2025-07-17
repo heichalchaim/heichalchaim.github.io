@@ -16,7 +16,7 @@ const COLUMN_SPANS = {
 };
 const MIN_FONT_SIZE = 8;
 const MAX_FONT_SIZE = 72;
-const FONT_STEP = 0.5;
+const FONT_STEP = 0.2;
 const PORTRAIT_FONT_SIZE = 18;
 
 // --- DOM Elements ---
