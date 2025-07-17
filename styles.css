@@ -84,6 +84,7 @@ body {
   gap: 0.5em;
   height: 100%;
   grid-auto-rows: 1fr;
+  overflow: auto;
 }
 .grid::-webkit-scrollbar {
   display: none;
