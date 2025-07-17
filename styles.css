@@ -125,7 +125,8 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.4em 0.1em;
+  padding: 0.4em 0.2em;
+  text-overflow: ellipsis;
   border-bottom: 0.1em solid var(--border);
 }
 
@@ -137,16 +138,7 @@ body {
   font-weight: 600;
   color: var(--primary);
   padding-left: 1em;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
   flex: 1;
-}
-
-.value {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 /* Special Card Variants */

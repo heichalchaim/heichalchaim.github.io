@@ -88,23 +88,29 @@ function setFontSize(size) {
  * @returns {boolean}
  */
 function checkForOverflow() {
-    if (mainGrid.scrollHeight > mainGrid.clientHeight + 1) return true;
+    // Main grid vertical overflow
+    if (mainGrid.scrollHeight > mainGrid.clientHeight) return true;
+
+    // Card body vertical overflow
     const cardBodies = document.querySelectorAll('.card-body');
     for (const body of cardBodies) {
-        if (body.scrollHeight > body.clientHeight + 1) return true;
+        if (body.scrollHeight > body.clientHeight) return true;
     }
+
+    // Row horizontal overflow (label + value)
     const rows = document.querySelectorAll('.card-body .row');
     for (const row of rows) {
         const label = row.querySelector('.label');
         const value = row.querySelector('.value');
-        if ((label && label.scrollWidth > label.clientWidth + 1) ||
-            (value && value.scrollWidth > value.clientWidth + 1)) {
+        // If label or value needs to scroll horizontally
+        if ((label && label.scrollWidth > label.clientWidth) ||
+            (value && value.scrollWidth > value.clientWidth)) {
             return true;
         }
-    }
-    const headers = document.querySelectorAll('.card-header');
-    for (const header of headers) {
-        if (header.scrollWidth > header.clientWidth + 1) return true;
+        // If combined label+value content is wider than the row
+        if (label && value && (label.scrollWidth + value.scrollWidth > row.clientWidth)) {
+            return true;
+        }
     }
     return false;
 }
@@ -205,34 +211,25 @@ function setupGridAndFont(data) {
         const regularCount = data.length - compactCount;
         const totalCols = (compactCount * COLUMN_SPANS.COMPACT) + (regularCount * COLUMN_SPANS.REGULAR);
         mainGrid.style.gridTemplateColumns = `repeat(${totalCols}, 1fr)`;
-        const cacheKey = `${window.innerWidth}-${window.innerHeight}-${data.length}-${JSON.stringify(data.map(d => ({title: d.title, contentCount: d.type === 'messages' ? d.messages.length : d.items.length})))}`;
-        const cachedSize = fontSizeCache[cacheKey];
-        if (cachedSize && !checkForOverflow()) {
-            setFontSize(cachedSize);
-            mainGrid.style.visibility = 'visible';
-        } else {
-            setFontSize(MAX_FONT_SIZE);
-            let min = MIN_FONT_SIZE;
-            let max = MAX_FONT_SIZE;
-            let foundSize = null;
-            let iterations = 0;
-            const maxIterations = 100;
-            while (max - min > FONT_STEP && iterations < maxIterations) {
-                iterations++;
-                const current = (min + max) / 2;
-                setFontSize(current);
-                if (!checkForOverflow()) {
-                    min = current;
-                    foundSize = current;
-                } else {
-                    max = current;
-                }
+        setFontSize(MAX_FONT_SIZE);
+        let min = MIN_FONT_SIZE;
+        let max = MAX_FONT_SIZE;
+        let foundSize = null;
+        let iterations = 0;
+        const maxIterations = 100;
+        while (max - min > FONT_STEP && iterations < maxIterations) {
+            iterations++;
+            const current = (min + max) / 2;
+            setFontSize(current);
+            if (!checkForOverflow()) {
+                min = current;
+                foundSize = current;
+            } else {
+                max = current;
             }
-            setFontSize(foundSize !== null ? foundSize : MIN_FONT_SIZE);
-            const newSize = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--base-font-size'));
-            fontSizeCache[cacheKey] = newSize;
-            mainGrid.style.visibility = 'visible';
         }
+        setFontSize(foundSize !== null ? foundSize : MIN_FONT_SIZE);
+        mainGrid.style.visibility = 'visible';
     }
     // Update card spans after grid setup
     const cards = mainGrid.querySelectorAll('.card');
