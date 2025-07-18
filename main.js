@@ -16,9 +16,9 @@ const COLUMN_SPANS = {
 };
 const MIN_FONT_SIZE = 8;
 const MAX_FONT_SIZE = 72;
-const FONT_STEP = 0.01;
+const FONT_STEP = 0.001;
 const PORTRAIT_FONT_SIZE = 18;
-const COMPACT_FONT_RATIO = 0.75;
+const COMPACT_FONT_RATIO = 0.736;
 
 // --- DOM Elements ---
 const mainGrid = document.getElementById('mainGrid');
@@ -88,50 +88,24 @@ function setFontSize(size) {
  * @returns {boolean}
  */
 function checkForOverflow() {
-    let overflowDetected = false; // Keep track if any overflow is detected
+    const body = document.querySelector('body');
 
-    // Check for vertical overflow in the main grid.
-    // If the scrollable content height exceeds the visible height, there's overflow.
-    if (mainGrid.scrollHeight > mainGrid.clientHeight) {
-        console.log('checkForOverflow: Main grid vertical overflow detected.');
-        overflowDetected = true;
-    }
+    const cards = mainGrid.querySelectorAll('.card');
+    cards.forEach(card => {
+        card.style.whiteSpace = 'nowrap';
+    });
 
-    // Check for vertical overflow within individual card bodies.
-    const cardBodies = document.querySelectorAll('.card-body');
-    for (const body of cardBodies) {
-        if (body.scrollHeight > body.clientHeight) {
-            console.log('checkForOverflow: Card body vertical overflow detected:', body);
-            overflowDetected = true;
-            break; // Exit after detecting overflow in one card body
-        }
-    }
+    const overflow = 
+        body.scrollHeight > body.clientHeight ||
+        body.scrollWidth > body.clientWidth ||
+        mainGrid.scrollHeight > mainGrid.clientHeight
 
-    // Check for horizontal overflow within rows (label and value).
-    const rows = document.querySelectorAll('.card-body .row');
-    if (!overflowDetected) { // Only check rows if no other overflow has been found
-        for (const row of rows) {
-        const label = row.querySelector('.label');
-        const value = row.querySelector('.value');
+    // reset .card
+    cards.forEach(card => {
+        card.style.whiteSpace = '';
+    });
 
-        // Check if either the label or value content overflows its container.
-        if ((label && label.scrollWidth > label.clientWidth) || (value && value.scrollWidth > value.clientWidth)) {
-            console.log('checkForOverflow: Row content horizontal overflow detected:', row, label, value);
-            overflowDetected = true;
-            break;  // Exit after detecting overflow in one row
-        }
-
-        // Check if the combined width of label and value exceeds the row's width,
-        // even if neither overflows individually (indicates they don't fit side-by-side).
-            if (label && value && label.scrollWidth + value.scrollWidth > row.clientWidth) {
-                console.log('checkForOverflow: Row content combined width overflow detected:', row, label, value);
-                overflowDetected = true;
-                break;  // Exit after detecting overflow in one row
-            }
-        }
-    }
-
-    return overflowDetected; // Return true if any overflow was detected, otherwise return false.
+    return overflow;
 }
 
 // --- Data Fetching ---

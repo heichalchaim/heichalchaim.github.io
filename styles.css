@@ -32,9 +32,6 @@ body {
   display: grid;
   grid-template-rows: auto 1fr auto;
   font-size: var(--base-font-size);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
   transform: translateZ(0);
 }
 
@@ -72,7 +69,6 @@ body {
   background: rgba(255, 255, 255, 0.1);
   padding: 0.5vw 1vw;
   border-radius: var(--border-radius);
-  white-space: nowrap;
 }
 
 /* =====================
@@ -85,9 +81,6 @@ body {
   height: 100%;
   grid-auto-rows: 1fr;
   overflow: auto;
-}
-.grid::-webkit-scrollbar {
-  display: none;
 }
 
 /* =====================
@@ -104,7 +97,7 @@ body {
 .card-header {
   background: var(--primary);
   color: var(--white);
-  padding: 0.3em 0.1em;
+  padding: 0.3em;
   font-weight: 600;
   border-radius: var(--border-radius) var(--border-radius) 0 0;
   text-align: center;
@@ -133,7 +126,7 @@ body {
 .label {
   font-weight: 600;
   color: var(--primary);
-  padding-left: 1em;
+  padding-left: 1rem;
   flex: 1;
 }
 
@@ -190,33 +183,21 @@ body {
    Responsive: Portrait/Mobile
    ===================== */
 @media (orientation: portrait) {
-  body {
-    font-smooth: auto;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: auto;
-  }
   .header {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    height: fit-content;
-    min-height: auto;
     padding: 0.5em;
   }
   .title {
-    grid-column: unset;
-    position: static;
-    transform: none;
-    font-size: 8vw;
+    font-size: 2rem;
     white-space: normal;
-    text-align: center;
-    padding: 1vw;
-    max-width: 100%;
   }
   .footer {
-    font-size: 3vw;
-    padding: 1vw;
+    display: none;
+  }
+  .card.messages {
+    display: none;
+  }
+  .card.compact {
+    display: none;
   }
   .clock {
     display: none;
