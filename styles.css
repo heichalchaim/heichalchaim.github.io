@@ -182,6 +182,9 @@ body {
    Responsive: Portrait/Mobile
    ===================== */
 @media (orientation: portrait) {
+  body {
+    grid-template-rows: unset;
+  }
   .header {
     padding: 0.5em;
   }
