@@ -78,7 +78,6 @@ body {
   padding: 0.5em;
   display: grid;
   gap: 0.5em;
-  height: 100%;
   grid-auto-rows: 1fr;
 }
 
@@ -182,9 +181,6 @@ body {
    Responsive: Portrait/Mobile
    ===================== */
 @media (orientation: portrait) {
-  body {
-    grid-template-rows: unset;
-  }
   .header {
     padding: 0.5em;
   }
