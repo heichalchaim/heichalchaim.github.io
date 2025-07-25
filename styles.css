@@ -33,6 +33,7 @@ body {
   grid-template-rows: auto 1fr auto;
   font-size: var(--base-font-size);
   transform: translateZ(0);
+  overflow: auto;
 }
 
 /* =====================
@@ -79,7 +80,6 @@ body {
   gap: 0.5em;
   height: 100%;
   grid-auto-rows: 1fr;
-  overflow: auto;
 }
 
 /* =====================
