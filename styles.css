@@ -188,6 +188,9 @@ body {
     font-size: 2rem;
     white-space: normal;
   }
+  .footer {
+    display: none;
+  }
   .card.compact {
     display: none;
   }
