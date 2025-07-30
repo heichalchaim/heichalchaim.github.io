@@ -90,10 +90,8 @@ function setFontSize(size) {
 function checkForOverflow() {
     const body = document.querySelector('body');
 
-    // Select only non-compact cards
-    const cards = Array.from(mainGrid.querySelectorAll('.card'))
-        .filter(card => !card.classList.contains('compact'));
-
+    // Temporarily set white-space to nowrap to check for overflow
+    const cards = mainGrid.querySelectorAll('.card:not(.messages)');
     cards.forEach(card => {
         card.style.whiteSpace = 'nowrap';
     });
