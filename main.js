@@ -18,7 +18,7 @@ const MIN_FONT_SIZE = 8;
 const MAX_FONT_SIZE = 72;
 const FONT_STEP = 0.001;
 const PORTRAIT_FONT_SIZE = 18;
-const COMPACT_FONT_RATIO = 0.736;
+const COMPACT_FONT_RATIO = 0.75;
 
 // --- DOM Elements ---
 const mainGrid = document.getElementById('mainGrid');
